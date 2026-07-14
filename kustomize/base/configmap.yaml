@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+
+metadata:
+  name: hello-api-config
+
+data:
+
+  LOG_LEVEL: info
+
+  APP_NAME: hello-api

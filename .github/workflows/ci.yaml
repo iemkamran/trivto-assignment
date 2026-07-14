@@ -1,0 +1,46 @@
+name: Build
+
+on:
+
+  push:
+
+    branches:
+
+      - none
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - uses: actions/checkout@v4
+
+    - uses: docker/login-action@v3
+
+    - uses: docker/build-push-action@v6
+
+      with:
+
+        push: true
+
+        tags: yourdockerhub/hello-api:${{ github.sha }}
+
+    - name: Update Kustomize
+
+      run: |
+
+        cd kustomize/overlays/prod
+        kustomize edit set image yourdockerhub/hello-api:${{ github.sha }}
+
+    - name: Commit
+
+      run: |
+
+        git config user.name github-actions
+        git config user.email github-actions@github.com
+        git add .
+        git commit -m "Update image"
+        git push

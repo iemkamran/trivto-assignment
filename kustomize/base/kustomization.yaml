@@ -1,0 +1,10 @@
+resources:
+
+- deployment.yaml
+- service.yaml
+- configmap.yaml
+
+images:
+
+- name: yourdockerhub/hello-api
+  newTag: v1
