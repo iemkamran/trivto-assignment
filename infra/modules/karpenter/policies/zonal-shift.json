@@ -1,0 +1,67 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "AllowScopedInstanceProfileCreationActions",
+      "Effect": "Allow",
+      "Action": [
+        "iam:CreateInstanceProfile"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestTag/kubernetes.io/cluster/": "owned",
+          "aws:RequestTag/topology.kubernetes.io/region": ""
+        },
+        "StringLike": {
+          "aws:RequestTag/karpenter.k8s.aws/ec2nodeclass": "*"
+        }
+      }
+    },
+    {
+      "Sid": "AllowScopedInstanceProfileTagActions",
+      "Effect": "Allow",
+      "Action": [
+        "iam:TagInstanceProfile"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "StringEquals": {
+          "aws:ResourceTag/kubernetes.io/cluster/": "owned",
+          "aws:ResourceTag/topology.kubernetes.io/region": "",
+          "aws:RequestTag/kubernetes.io/cluster/": "owned",
+          "aws:RequestTag/topology.kubernetes.io/region": ""
+        },
+        "StringLike": {
+          "aws:ResourceTag/karpenter.k8s.aws/ec2nodeclass": "*",
+          "aws:RequestTag/karpenter.k8s.aws/ec2nodeclass": "*"
+        }
+      }
+    },
+    {
+      "Sid": "AllowScopedInstanceProfileActions",
+      "Effect": "Allow",
+      "Action": [
+        "iam:AddRoleToInstanceProfile",
+        "iam:RemoveRoleFromInstanceProfile",
+        "iam:DeleteInstanceProfile"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "StringEquals": {
+          "aws:ResourceTag/kubernetes.io/cluster/": "owned",
+          "aws:ResourceTag/topology.kubernetes.io/region": ""
+        },
+        "StringLike": {
+          "aws:ResourceTag/karpenter.k8s.aws/ec2nodeclass": "*"
+        }
+      }
+    },
+    {
+      "Sid": "AllowInstanceProfileReadActions",
+      "Effect": "Allow",
+      "Action": "iam:GetInstanceProfile",
+      "Resource": "*"
+    }
+  ]
+}

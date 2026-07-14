@@ -8,7 +8,7 @@ terraform {
 
       source = "hashicorp/aws"
 
-      version = "~>5.80"
+      version = "~> 5.80"
 
     }
 

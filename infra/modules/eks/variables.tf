@@ -6,7 +6,7 @@ variable "cluster_name" {
 variable "cluster_version" {
   description = "Kubernetes Version"
   type        = string
-  default     = "1.35"
+  default     = "1.31"
 }
 
 variable "project" {

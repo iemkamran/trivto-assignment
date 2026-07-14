@@ -88,3 +88,26 @@ module "addons" {
 
 }
 
+
+module "karpenter" {
+
+  source = "../../modules/karpenter"
+
+  providers = {
+    aws        = aws
+    helm       = helm
+    kubernetes = kubernetes
+  }
+
+  project     = var.project
+  environment = var.environment
+
+  cluster_name     = module.eks.cluster_name
+  cluster_endpoint = module.eks.cluster_endpoint
+
+  cluster_oidc_issuer = module.eks.cluster_oidc_issuer
+  oidc_provider_arn   = module.irsa.oidc_provider_arn
+
+  private_subnet_ids     = module.vpc.private_subnets
+  node_security_group_id = module.eks.node_security_group_id
+}
