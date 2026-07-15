@@ -53,6 +53,11 @@ resource "helm_release" "karpenter" {
   }
 
   depends_on = [
-    aws_iam_role_policy_attachment.karpenter_controller
+    aws_iam_role_policy_attachment.node_lifecycle,
+    aws_iam_role_policy_attachment.iam_integration,
+    aws_iam_role_policy_attachment.eks_integration,
+    aws_iam_role_policy_attachment.resource_discovery,
+    aws_iam_role_policy_attachment.interruption,
+    aws_iam_role_policy_attachment.zonal_shift
   ]
 }
