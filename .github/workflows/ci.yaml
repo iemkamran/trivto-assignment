@@ -65,6 +65,11 @@ jobs:
           curl -s https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh | bash
           sudo mv kustomize /usr/local/bin/
 
+      - name: Debug
+        run: |
+          pwd
+          ls -al
+
       - name: Update Image Tag
         run: |
           cd kustomize/overlays/dev
