@@ -1,10 +1,14 @@
-resources:
+apiVersion: kustomize.config.k8s.io/v1beta1
 
+kind: Kustomization
+
+resources:
 - deployment.yaml
 - service.yaml
+- ingress.yaml
+- hpa.yaml
 - configmap.yaml
 
 images:
-
-- name: yourdockerhub/hello-api
-  newTag: v1
+- name: 414772274275.dkr.ecr.ap-south-1.amazonaws.com/hello-api-dev-hello-api
+  newTag: 64c9257a9b29dd108f023def8bcdd119043dc225

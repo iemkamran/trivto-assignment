@@ -1,8 +1,9 @@
 apiVersion: apps/v1
 kind: Deployment
-
 metadata:
   name: hello-api
+  labels:
+    app: hello-api
 
 spec:
   replicas: 2
@@ -17,32 +18,39 @@ spec:
         app: hello-api
 
     spec:
-
-      serviceAccountName: hello-api
-
       containers:
-
       - name: hello-api
 
-        image: yourdockerhub/hello-api:v1
+        image: 414772274275.dkr.ecr.ap-south-1.amazonaws.com/hello-api-dev-hello-api:64c9257a9b29dd108f023def8bcdd119043dc225
 
         imagePullPolicy: Always
 
         ports:
-
         - containerPort: 8080
 
         envFrom:
-
         - configMapRef:
             name: hello-api-config
 
         resources:
-
           requests:
-            cpu: 100m
+            cpu: 200m
             memory: 128Mi
 
           limits:
             cpu: 500m
-            memory: 512Mi
+            memory: 256Mi
+
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 10
+
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 15

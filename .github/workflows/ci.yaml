@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - "kustomize/**"
 
 permissions:
   contents: write
@@ -57,3 +59,28 @@ jobs:
         run: |
           docker push \
           ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}:${{ github.sha }}
+
+      - name: Install Kustomize
+        run: |
+          curl -s https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh | bash
+          sudo mv kustomize /usr/local/bin/
+
+      - name: Update Image Tag
+        run: |
+          cd kustomize/overlays/dev
+
+          kustomize edit set image \
+          414772274275.dkr.ecr.ap-south-1.amazonaws.com/hello-api-dev-hello-api=414772274275.dkr.ecr.ap-south-1.amazonaws.com/hello-api-dev-hello-api:${{ github.sha }}
+
+      - name: Commit Image Update
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+          git add kustomize/overlays/dev/kustomization.yaml
+
+          git diff --cached --quiet || \
+          git commit -m "Deploy image ${{ github.sha }}"
+
+      - name: Push Changes
+        run: git push
