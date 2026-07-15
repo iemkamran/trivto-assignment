@@ -7,4 +7,4 @@ patches:
 images:
 - name: 414772274275.dkr.ecr.ap-south-1.amazonaws.com/hello-api-dev-hello-api
   newName: 414772274275.dkr.ecr.ap-south-1.amazonaws.com/hello-api-dev-hello-api
-  newTag: eac2462f528758a59e5d722dc515247147be8b47
+  newTag: 8c1f2190a2713cba5f29af076e32ba5d40edbdc2
