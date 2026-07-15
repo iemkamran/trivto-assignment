@@ -111,3 +111,11 @@ module "karpenter" {
   private_subnet_ids     = module.vpc.private_subnets
   node_security_group_id = module.eks.node_security_group_id
 }
+
+module "ecr" {
+
+  source = "../../modules/ecr"
+
+  project     = var.project
+  environment = var.environment
+}

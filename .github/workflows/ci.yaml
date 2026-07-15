@@ -1,46 +1,59 @@
-name: Build
+name: Build and Push to ECR
 
 on:
-
   push:
-
     branches:
+      - main
 
-      - none
+permissions:
+  contents: write
 
 jobs:
-
-  build:
+  docker:
 
     runs-on: ubuntu-latest
 
+    defaults:
+      run:
+        working-directory: app
+
     steps:
 
-    - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - uses: docker/login-action@v3
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
 
-    - uses: docker/build-push-action@v6
+      - name: Run Tests
+        run: go test ./...
 
-      with:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
-        push: true
+      - name: Login to Amazon ECR
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
 
-        tags: yourdockerhub/hello-api:${{ github.sha }}
+      - name: Build Image
+        run: |
+          docker build \
+          -t ${{ secrets.ECR_REPOSITORY }}:${{ github.sha }} \
+          .
 
-    - name: Update Kustomize
+      - name: Tag Image
+        run: |
+          docker tag \
+          ${{ secrets.ECR_REPOSITORY }}:${{ github.sha }} \
+          ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}:${{ github.sha }}
 
-      run: |
-
-        cd kustomize/overlays/prod
-        kustomize edit set image yourdockerhub/hello-api:${{ github.sha }}
-
-    - name: Commit
-
-      run: |
-
-        git config user.name github-actions
-        git config user.email github-actions@github.com
-        git add .
-        git commit -m "Update image"
-        git push
+      - name: Push Image
+        run: |
+          docker push \
+          ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}:${{ github.sha }}

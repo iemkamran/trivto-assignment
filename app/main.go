@@ -1,25 +1,55 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
+	"log"
 	"net/http"
 	"os"
 )
 
+type HealthResponse struct {
+	Status string `json:"status"`
+}
+
 func main() {
-	http.HandleFunc("/", getHello)
-	err := http.ListenAndServe(":8080", nil)
+	mux := http.NewServeMux()
+
+	mux.HandleFunc("/", helloHandler)
+	mux.HandleFunc("/healthz", healthHandler)
+	mux.HandleFunc("/readyz", readyHandler)
+
+	log.Println("Starting server on :8080")
+
+	err := http.ListenAndServe(":8080", mux)
+
 	if errors.Is(err, http.ErrServerClosed) {
-		fmt.Printf("server closed\n")
+		log.Println("Server stopped")
 	} else if err != nil {
-		fmt.Printf("error starting server: %s\n", err)
+		log.Printf("Server failed: %v", err)
 		os.Exit(1)
 	}
 }
 
-func getHello(w http.ResponseWriter, r *http.Request) {
+func helloHandler(w http.ResponseWriter, r *http.Request) {
 	name := r.URL.Query().Get("name")
-	io.WriteString(w, "Hello "+name+"\n")
+
+	if name == "" {
+		name = "World"
+	}
+
+	fmt.Fprintf(w, "Hello %s!\n", name)
+}
+
+func healthHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(HealthResponse{
+		Status: "ok",
+	})
+}
+
+func readyHandler(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("ready"))
 }
