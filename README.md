@@ -8,6 +8,14 @@ The platform is completely automated using Terraform and GitHub Actions and incl
 
 # Architecture
 
+The following diagram illustrates the end-to-end platform architecture, from code commit through CI/CD, GitOps deployment, Kubernetes orchestration, and autoscaling with Karpenter.
+
+<p align="center">
+  <img src="./platform-architecture.drawio.png" alt="Platform Architecture" width="100%">
+</p>
+
+## High-Level Flow
+
 ```
                    GitHub
                       │
