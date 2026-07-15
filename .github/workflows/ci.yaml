@@ -72,7 +72,7 @@ jobs:
 
       - name: Update Image Tag
         run: |
-          cd kustomize/overlays/dev
+          cd ../kustomize/overlays/dev
 
           kustomize edit set image \
           414772274275.dkr.ecr.ap-south-1.amazonaws.com/hello-api-dev-hello-api=414772274275.dkr.ecr.ap-south-1.amazonaws.com/hello-api-dev-hello-api:${{ github.sha }}
