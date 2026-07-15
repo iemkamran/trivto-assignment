@@ -1,12 +1,10 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-
 resources:
-  - ../../base
-
+- ../../base
 patches:
-  - path: patch.yaml
-
+- path: patch.yaml
 images:
-  - name: 414772274275.dkr.ecr.ap-south-1.amazonaws.com/hello-api-dev-hello-api
-    newTag: latest
+- name: 414772274275.dkr.ecr.ap-south-1.amazonaws.com/hello-api-dev-hello-api
+  newName: 414772274275.dkr.ecr.ap-south-1.amazonaws.com/hello-api-dev-hello-api
+  newTag: 0450c463d73d39eff3b068c6527c4dce347eca58
