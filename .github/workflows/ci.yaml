@@ -12,16 +12,13 @@ permissions:
 
 jobs:
   docker:
-
     runs-on: ubuntu-latest
 
-    defaults:
-      run:
-        working-directory: app
+    env:
+      IMAGE_URI: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}
 
     steps:
-
-      - name: Checkout
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
       - name: Setup Go
@@ -29,7 +26,8 @@ jobs:
         with:
           go-version: "1.24"
 
-      - name: Run Tests
+      - name: Run Go Tests
+        working-directory: app
         run: go test ./...
 
       - name: Configure AWS Credentials
@@ -40,52 +38,52 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Login to Amazon ECR
-        id: ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Build Image
+      - name: Build Docker Image
+        working-directory: app
         run: |
           docker build \
-          -t ${{ secrets.ECR_REPOSITORY }}:${{ github.sha }} \
-          .
+            -t $IMAGE_URI:${{ github.sha }} \
+            -t $IMAGE_URI:latest \
+            .
 
-      - name: Tag Image
+      - name: Push Docker Images
         run: |
-          docker tag \
-          ${{ secrets.ECR_REPOSITORY }}:${{ github.sha }} \
-          ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}:${{ github.sha }}
-
-      - name: Push Image
-        run: |
-          docker push \
-          ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}:${{ github.sha }}
+          docker push $IMAGE_URI:${{ github.sha }}
+          docker push $IMAGE_URI:latest
 
       - name: Install Kustomize
         run: |
-          curl -s https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh | bash
+          curl -sSfL https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh | bash
           sudo mv kustomize /usr/local/bin/
+          kustomize version
 
-      - name: Debug
+      - name: Verify Repository Structure
         run: |
           pwd
-          ls -al
+          ls -la
+          find . -maxdepth 3 -type d
 
-      - name: Update Image Tag
+      - name: Update Kustomize Image
+        working-directory: kustomize/overlays/dev
         run: |
-          cd ../kustomize/overlays/dev
-
           kustomize edit set image \
-          414772274275.dkr.ecr.ap-south-1.amazonaws.com/hello-api-dev-hello-api=414772274275.dkr.ecr.ap-south-1.amazonaws.com/hello-api-dev-hello-api:${{ github.sha }}
+            $IMAGE_URI=$IMAGE_URI:${{ github.sha }}
 
-      - name: Commit Image Update
+      - name: Commit Updated Manifest
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
 
           git add kustomize/overlays/dev/kustomization.yaml
 
-          git diff --cached --quiet || \
+          if git diff --cached --quiet; then
+            echo "No manifest changes."
+            exit 0
+          fi
+
           git commit -m "Deploy image ${{ github.sha }}"
 
-      - name: Push Changes
+      - name: Push Manifest Changes
         run: git push
